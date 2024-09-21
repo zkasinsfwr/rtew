@@ -2,48 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>My Telegram Web App</title>
-    <!-- Подключаем SDK Telegram Web Apps -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Mini App</title>
 </head>
 <body>
-    <script type="text/javascript">
-        // Функция для перенаправления на страницу в зависимости от языка пользователя
-        function redirectToLanguagePage() {
-            // Получаем текущий путь страницы
-            const currentPage = window.location.pathname;
+    <!-- Подключение библиотеки Telegram Web Apps -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-            // Проверяем, находимся ли мы уже на целевой странице
-            if (currentPage.includes('indexru.html') || currentPage.includes('indexeng.html')) {
-                // Если да, прекращаем выполнение функции
-                return;
-            }
+    <script>
+        // После загрузки библиотеки можно использовать Telegram.WebApp
+        Telegram.WebApp.ready();
 
-            // Проверяем, доступен ли объект Telegram WebApp
-            if (window.Telegram && window.Telegram.WebApp) {
-                // Дожидаемся готовности Web App
-                Telegram.WebApp.ready();
+        // Получаем язык пользователя из Telegram WebApp
+        const userLanguage = Telegram.WebApp.initDataUnsafe.user.language_code;
 
-                // Получаем язык пользователя
-                const userLang = (Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user && Telegram.WebApp.initDataUnsafe.user.language_code) || 'en';
-
-                // Определяем страницу для перенаправления
-                let page = 'indexeng.html'; // По умолчанию - английская версия
-
-                if (userLang.startsWith('ru')) {
-                    page = 'indexru.html';
-                }
-
-                // Перенаправляем пользователя на соответствующую страницу
-                window.location.href = page;
-            } else {
-                // Если объект Telegram WebApp недоступен, выводим сообщение или выполняем альтернативные действия
-                alert('Telegram WebApp не доступен.');
-            }
+        // Проверка языка и редирект
+        if (userLanguage.startsWith('ru')) {
+            window.location.href = 'indexru.html';
+        } else if (userLanguage.startsWith('en')) {
+            window.location.href = 'indexeng.html';
+        } else {
+            // Язык по умолчанию
+            window.location.href = 'indexeng.html';
         }
-
-        // Запускаем функцию после полной загрузки страницы
-        window.addEventListener('load', redirectToLanguagePage);
     </script>
+
+    <h1>Loading...</h1>
 </body>
 </html>
