@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DUCKS Telegram Mini App</title>
+    <!-- Google Fonts (Ruda) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Ruda:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Global Styles */
+        body {
+            margin: 0;
+            font-family: 'Ruda', sans-serif;
+            background-color: #FFFFFF;
+            color: #333333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            flex: 1; /* Позволяет контейнеру занимать всё доступное пространство */
+            display: flex;
+            flex-direction: column;
+            position: relative; /* Для корректного позиционирования вкладок */
+        }
+
+        /* Variables */
+        :root {
+            --ducks: 0;
+            --hot: 0;
+        }
+
+        /* Main Text Styles */
+        h1, h2 {
+            color: #333333;
+        }
+
+        .ducks-amount, .hot-amount {
+            font-size: 28px;
+            margin: 15px 0;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .main-icon {
+            width: 169px; /* Увеличено на 30% от 130px */
+            height: 169px; /* Увеличено на 30% от 130px */
+            display: block;
+            margin: 0 auto 15px auto;
+        }
+
+        .section-title {
+            font-size: 22px;
+            margin: 25px 0 15px 0;
+            font-weight: 600;
+            border-bottom: 1px solid #c0c0c0; /* Изменён цвет границы на более серый */
+            padding-bottom: 10px;
+            text-align: left; /* Выравнивание надписи Tasks по левому краю */
+        }
+
+        .tasks-section {
+            padding: 0 25px 80px 25px; /* Добавлен нижний отступ 80px */
+            flex: 1; /* Позволяет секции задач занимать доступное пространство */
+            overflow-y: auto; /* Добавляет прокрутку, если контента слишком много */
+        }
+
+        .task {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px; /* Уменьшены отступы */
+            border: 1px solid #e0e0e0;
+            border-radius: 15px; /* Более закруглённые углы */
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+            width: 100%;
+            box-sizing: border-box;
+            position: relative;
+            transition: box-shadow 0.3s;
+        }
+
+        .task:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-info {
+            flex: 1;
+            padding-right: 15px; /* Уменьшен отступ */
+        }
+
+        .task-text {
+            margin: 0 0 8px 0; /* Уменьшен отступ */
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .task-reward {
+            margin: 0 0 8px 0; /* Уменьшен отступ */
+            color: #666666;
+            font-size: 16px;
+        }
+
+        .task-links a {
+            color: #1a73e8;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .task-links a:hover {
+            text-decoration: underline;
+        }
+
+        .task-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px; /* Уменьшено расстояние между кнопками */
+        }
+
+        /* Изменение кнопки Open */
+        .task-button {
+            padding: 10px 20px;
+            border: 1px solid #000000; /* Уменьшенная чёрная обводка */
+            border-radius: 25px; /* Более закруглённые кнопки */
+            background-color: #FFFFFF; /* Белый фон */
+            color: #000000; /* Чёрный текст */
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s, transform 0.2s, color 0.3s;
+            min-width: 110px;
+            text-align: center;
+            box-shadow: none; /* Убраны тени */
+        }
+
+        .task-button:hover:not(:disabled) {
+            background-color: #f0f0f0;
+            transform: translateY(-2px);
+        }
+
+        .task-button:disabled {
+            background-color: #e0e0e0;
+            color: #a0a0a0;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Изменение кнопки Check */
+        .check-button {
+            padding: 8px 16px;
+            border: 1px solid #000000; /* Добавлена чёрная обводка */
+            border-radius: 50px; /* Круглая кнопка */
+            background-color: #FFFFFF; /* Белый фон */
+            color: #000000; /* Чёрный текст */
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s, transform 0.2s, color 0.3s;
+            min-width: 80px;
+            text-align: center;
+            font-size: 14px;
+            box-shadow: none; /* Убраны тени */
+        }
+
+        .check-button:hover:not(:disabled) {
+            background-color: #f0f0f0;
+            transform: translateY(-2px);
+        }
+
+        .check-button:disabled {
+            background-color: #e0e0e0;
+            color: #a0a0a0;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Изменение кнопки Show More Tasks */
+        .show-more-tasks {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 12px 0; /* Уменьшен отступ */
+            background: none;
+            border: none;
+            color: #333333;
+            cursor: pointer;
+            font-size: 18px; /* Уменьшен размер шрифта */
+            font-weight: 500; /* Сделан текст тоньше */
+            transition: color 0.3s, background-color 0.3s;
+            /* Удалены обводка и закругления */
+            background-color: transparent;
+            margin-top: 10px;
+            text-decoration: none; /* Удалено подчеркивание */
+        }
+
+        .show-more-tasks:hover {
+            color: #1a73e8;
+        }
+
+        .arrow-icon {
+            width: 20px;
+            height: 20px;
+            margin-left: 10px;
+            transition: transform 0.3s;
+        }
+
+        .arrow-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 70px; /* Высота нижней панели */
+            background-color: #FFFFFF;
+            display: flex;
+            justify-content: space-between; /* Разделение на равные части */
+            align-items: center;
+            border-top: 1px solid #d0d0d0; /* Более тёмная граница */
+
+            box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+            padding: 0 10px;
+            box-sizing: border-box;
+            /* Удалено повторное позиционирование */
+            z-index: 10; /* Понижен z-index для предотвращения перекрытия */
+            pointer-events: auto; /* Обеспечить кликабельность */
+        }
+
+        /* Индикатор навигации */
+        .nav-indicator {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 33.3333%;
+            height: 3px;
+            background-color: #a0a0a0; /* Изменён цвет на более серый */
+            transition: transform 0.3s ease;
+            z-index: 5; /* Размещён ниже элементов навигации */
+        }
+
+        /* Стилизация активного nav-button-container */
+        .nav-button-container {
+            flex: 1; /* Равное деление пространства */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s; /* Плавный переход цвета */
+            border-radius: 10px; /* Закругленные углы для контейнера */
+            position: relative; /* Для позиционирования содержимого */
+        }
+
+        .nav-button-container.active {
+            /* Удаляем изменение фона при активном состоянии */
+            background-color: transparent;
+        }
+
+        .nav-button {
+            background: none;
+            border: none;
+            color: #000000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            font-size: 14px;
+            transition: color 0.3s;
+            padding: 10px 0; /* Уменьшен padding для размещения обводки */
+            width: 100%; /* Растягиваем кнопки на всю ширину контейнера */
+            height: 100%;
+            position: relative; /* Для позиционирования контента внутри */
+            pointer-events: auto; /* Обеспечить кликабельность */
+        }
+
+        .nav-button.active {
+            color: #333333; /* Изменение цвета активной кнопки на более тёмный */
+        }
+
+        .nav-button span {
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-icon {
+            width: 28px;
+            height: 28px;
+            margin-bottom: 4px;
+            transition: transform 0.3s;
+        }
+
+        /* Transition for Tab Contents (Возвращено к мгновенным переходам) */
+        .tab-content {
+            display: none;
+            padding: 20px 0; /* Добавлен верхний и нижний отступ для содержимого */
+            overflow-y: auto; /* Добавляет прокрутку при переполнении */
+            flex: 1; /* Позволяет содержимому занимать доступное пространство */
+            padding-bottom: 20px; /* Дополнительный отступ внизу */
+        }
+
+        .tab-content.active {
+            display: block;
+            position: relative;
+        }
+
+        /* Get HOT's Tab */
+        .get-hots-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+        }
+
+        .hots-title {
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 25px 0;
+            font-weight: 600;
+        }
+
+        .hots-icon {
+            width: 24px; /* Изменено на 24px */
+            height: 28px; /* Изменено на 28px */
+            margin-right: 10px;
+        }
+
+        .hots-description {
+            padding: 0 30px;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 16px;
+            color: #555555;
+        }
+
+        .connect-wallet-button {
+            padding: 14px 28px;
+            border: 2px solid #000000; /* Чёрная обводка */
+            border-radius: 10px;
+            background-color: #FFFFFF; /* Белый фон */
+            color: #000000; /* Чёрный текст */
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.2s, color 0.3s;
+            font-size: 18px;
+
+            min-width: 200px;
+            text-align: center;
+            margin-bottom: 20px; /* Добавлен отступ */
+            box-shadow: none; /* Убраны тени */
+        }
+
+        .connect-wallet-button:hover {
+            background-color: #f0f0f0;
+            transform: translateY(-2px);
+        }
+
+        /* FAQ */
+        .faq-section {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .faq-item {
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f5f5f5;
+            padding: 15px 20px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: background-color 0.3s;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .faq-question:hover {
+            background-color: #e0e0e0;
+        }
+
+        .faq-answer {
+            display: none;
+            background-color: #f0f0f0;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-size: 15px;
+            color: #555555;
+        }
+
+        .faq-answer.visible {
+            display: block;
+        }
+
+        .faq-arrow {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.3s;
+        }
+
+        .faq-arrow.rotated {
+            transform: rotate(180deg);
+        }
+
+        /* Leaderboard Tab */
+        .leaderboard-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .leaderboard-logo {
+            width: 208px; /* Увеличено на 30% от 160px */
+            height: 208px; /* Увеличено на 30% от 160px */
+            margin-bottom: 20px;
+        }
+
+        .leaderboard-message {
+            font-size: 22px;
+            margin-top: 30px;
+            color: #666666;
+            text-align: center;
+        }
+
+        /* New Quests Text */
+        .new-quests {
+            text-align: center;
+            margin: 25px 0;
+            font-size: 16px;
+            color: #888888;
+        }
+
+        /* Responsiveness (Removed tendency to shrink elements) */
+        @media (max-width: 800px) {
+            .task {
+                padding: 15px 20px;
+                font-size: 18px;
+            }
+
+            .show-more-tasks {
+                font-size: 18px;
+            }
+
+            .connect-wallet-button {
+                font-size: 18px;
+                min-width: 200px;
+            }
+
+            .faq-question, .faq-answer {
+                font-size: 16px;
+            }
+
+            .leaderboard-logo {
+                width: 208px; /* Сохранили пропорции с увеличением */
+                height: 208px;
+            }
+
+            .leaderboard-message {
+                font-size: 24px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .tasks-section {
+                padding: 0 15px 80px 15px; /* Дополнительно уменьшен отступ и сохранён padding-bottom */
+            }
+
+            .task {
+                padding: 12px 15px; /* Дополнительно уменьшены отступы */
+                font-size: 16px;
+            }
+
+            .show-more-tasks {
+                font-size: 16px;
+            }
+
+            .connect-wallet-button {
+                font-size: 16px;
+                min-width: 180px;
+            }
+
+            .faq-section {
+                padding: 0 10px;
+            }
+
+            .leaderboard-logo {
+                width: 140px;
+                height: 140px;
+            }
+
+            .leaderboard-message {
+                font-size: 20px;
+            }
+        }
+
+        /* Adjust Task Layout */
+        .task-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .task-buttons .check-button {
+            align-self: flex-start;
+            margin-top: 8px; /* Уменьшен отступ */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- App Container -->
+    <div class="app-container">
+        <!-- Home Tab -->
+        <div class="tab-content active" id="home-tab">
+            <!-- Сменили местами логотип и $DUCKS -->
+            <img src="icons/duck-logo.png" alt="Duck Logo" class="main-icon">
+            <h1 class="ducks-amount">$DUCKS: <span id="ducks-value">0</span></h1>
+            
+            <section class="tasks-section">
+                <h2 class="section-title">Tasks</h2> <!-- Выравнено по левому краю -->
+                
+                <!-- Task 1 -->
+                <div class="task" id="task-1">
+                    <div class="task-info">
+                        <p class="task-text">Присоединяйтесь к комьюнити</p>
+                        <p class="task-reward">+400 $DUCKS и +3 HOT</p>
+                        <p class="task-links"><a href="https://t.me/ducksproject" target="_blank">t.me/ducksproject</a></p>
+                        <button class="check-button" id="check-1" onclick="checkTask(1)" disabled>Check</button>
+                    </div>
+                    <div class="task-buttons">
+                        <button class="task-button" onclick="openTask(1)">Open</button>
+                    </div>
+                </div>
+
+                <!-- Task 2 -->
+                <div class="task" id="task-2">
+                    <div class="task-info">
+                        <p class="task-text">Join Durov's channel</p>
+                        <p class="task-reward">+600 $DUCKS и +2 HOT</p>
+                        <p class="task-links"><a href="https://t.me/durov" target="_blank">t.me/durov</a></p>
+                        <button class="check-button" id="check-2" onclick="checkTask(2)" disabled>Check</button>
+                    </div>
+                    <div class="task-buttons">
+                        <button class="task-button" onclick="openTask(2)">Open</button>
+                    </div>
+                </div>
+
+                <!-- Task 3 -->
+                <div class="task" id="task-3">
+                    <div class="task-info">
+                        <p class="task-text">Join notcoin's channel</p>
+                        <p class="task-reward">+600 $DUCKS и +2 HOT</p>
+                        <p class="task-links"><a href="https://t.me/notcoin" target="_blank">t.me/notcoin</a></p>
+                        <button class="check-button" id="check-3" onclick="checkTask(3)" disabled>Check</button>
+                    </div>
+                    <div class="task-buttons">
+                        <button class="task-button" onclick="openTask(3)">Open</button>
+                    </div>
+                </div>
+
+                <!-- Additional Tasks -->
+                <div class="additional-tasks" id="additional-tasks" style="display: none;">
+                    <!-- Task 4 -->
+                    <div class="task" id="task-4">
+                        <div class="task-info">
+                            <p class="task-text">Connect Hot Wallet</p>
+                            <p class="task-reward">+1500 $DUCKS и +6 HOT</p>
+                            <button class="check-button" id="check-4" onclick="checkTask(4)" disabled>Check</button>
+                        </div>
+                        <div class="task-buttons">
+                            <button class="task-button" onclick="openTask(4)">Connect</button>
+                        </div>
+                    </div>
+
+                    <!-- Task 5 -->
+                    <div class="task" id="task-5">
+                        <div class="task-info">
+                            <p class="task-text">Join the Hot Wallet community</p>
+                            <p class="task-reward">+600 $DUCKS и +2 HOT</p>
+                            <p class="task-links"><a href="https://t.me/hotonnear" target="_blank">t.me/hotonnear</a></p>
+                            <button class="check-button" id="check-5" onclick="checkTask(5)" disabled>Check</button>
+                        </div>
+                        <div class="task-buttons">
+
+                            <button class="task-button" onclick="openTask(5)">Join</button>
+                        </div>
+                    </div>
+
+                    <!-- Task 6 -->
+                    <div class="task" id="task-6">
+                        <div class="task-info">
+                            <p class="task-text">Invite your friends</p>
+                            <p class="task-reward">+0 $DUCKS и +0 HOT</p>
+                            <p>Invited friends: <span id="invite-count">0</span></p>
+                        </div>
+                        <div class="task-buttons">
+                            <button class="task-button" onclick="inviteFriends()">Invite</button>
+                        </div>
+                    </div>
+
+                    <p class="new-quests">New quests coming soon</p>
+                </div>
+
+                <!-- Изменённый Show More Tasks (Только для Home Tab) -->
+                <button class="show-more-tasks" id="show-more-btn" onclick="toggleAdditionalTasks()">Show more tasks +</button>
+            </section>
+        </div>
+
+        <!-- Get HOT's Tab -->
+        <div class="tab-content" id="get-hots-tab">
+            <div class="get-hots-content">
+                <h1 class="hots-title">
+                    <img src="icons/fire.png" alt="Fire Icon" class="hots-icon">
+                    <span id="hots-available">15</span> HOT'S AVAILABLE <!-- Пробел между числом и текстом -->
+                </h1>
+                <p class="hots-description">
+                    Withdraw your HOT's directly to Here Wallet now. Connect your wallet and get HOT and a free roulette spin.
+                </p>
+                <button class="connect-wallet-button" onclick="location.href='hotwallet/index.html'">Connect wallet</button>
+
+                <section class="faq-section">
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            <span>Why can't I get my HOT's out?</span>
+                            <span class="faq-arrow">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>
+                                To withdraw your winnings in HOT or NEAR you need to connect your wallet and confirm the withdrawal in the Here Wallet app itself. Check the connection of the wallet. Also, try to invite a few friends with Here Wallet to unblock the withdrawal, your friends and you will receive HOT to your wallet anyway.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Leaderboard Tab -->
+        <div class="tab-content" id="leaderboard-tab">
+            <div class="leaderboard-content">
+                <img src="icons/duck-logo.png" alt="Duck Logo" class="leaderboard-logo">
+                <div class="leaderboard-message">Coming Soon</div>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="bottom-nav">
+            <!-- Индикатор активной кнопки -->
+            <div class="nav-indicator"></div>
+
+            <!-- Menu Button -->
+            <div class="nav-button-container active" id="container-home">
+                <button class="nav-button active" data-tab="home-tab">
+                    <img src="icons/home.png" alt="Home Icon" class="nav-icon">
+                    <span>Home</span> <!-- Изменено с "Menu" на "Home" -->
+                </button>
+            </div>
+
+            <!-- Leaderboard Button -->
+            <div class="nav-button-container" id="container-leaderboard">
+                <button class="nav-button" data-tab="leaderboard-tab">
+                    <img src="icons/leaderboard.png" alt="Leaderboard Icon" class="nav-icon">
+                    <span>Leaderboard</span>
+                </button>
+            </div>
+
+            <!-- Get HOT's Button -->
+            <div class="nav-button-container" id="container-get-hots">
+                <button class="nav-button" data-tab="get-hots-tab">
+
+                    <img src="icons/get-hots.png" alt="Get HOT's Icon" class="nav-icon">
+                    <span>Get HOT</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Telegram Web Apps Script -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <!-- JavaScript for Functionality -->
+    <script>
+        // Initialize Telegram WebApp
+        let tg = window.Telegram.WebApp;
+
+        // Variables
+        let DUCKS = parseInt(localStorage.getItem('DUCKS')) || 0;
+        let HOT = parseInt(localStorage.getItem('HOT')) || 0;
+        let invitedFriends = parseInt(localStorage.getItem('invitedFriends')) || 0;
+
+        document.getElementById('ducks-value').innerText = DUCKS;
+        document.getElementById('hots-available').innerText = HOT;
+        document.getElementById('invite-count').innerText = invitedFriends;
+
+        // Object to track task completion
+        const tasksStatus = JSON.parse(localStorage.getItem('tasksStatus')) || {};
+
+        // Function to update localStorage
+        function updateLocalStorage() {
+            localStorage.setItem('DUCKS', DUCKS);
+            localStorage.setItem('HOT', HOT);
+            localStorage.setItem('invitedFriends', invitedFriends);
+            localStorage.setItem('tasksStatus', JSON.stringify(tasksStatus));
+        }
+
+        // Function to switch tabs
+        const navButtons = document.querySelectorAll('.nav-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const navButtonContainers = {
+            'home-tab': document.getElementById('container-home'),
+            'leaderboard-tab': document.getElementById('container-leaderboard'),
+            'get-hots-tab': document.getElementById('container-get-hots')
+        };
+
+        const navIndicator = document.querySelector('.nav-indicator');
+
+        let activeTabId = 'home-tab'; // По умолчанию Home Tab
+
+        navButtons.forEach((button, index) => {
+            button.addEventListener('click', () => {
+                const tabId = button.getAttribute('data-tab');
+
+                if (activeTabId === tabId) return; // Если та же вкладка, ничего не делать
+
+                // Удалить активные классы со всех кнопок и контейнеров
+                navButtons.forEach(btn => btn.classList.remove('active'));
+                Object.values(navButtonContainers).forEach(container => container.classList.remove('active'));
+                
+                // Добавить активный класс к нажатой кнопке и её контейнеру
+                button.classList.add('active');
+                navButtonContainers[tabId].classList.add('active');
+
+                // Удалить класс active со всех вкладок
+                tabContents.forEach(tab => tab.classList.remove('active'));
+
+                // Показать соответствующую вкладку
+                document.getElementById(tabId).classList.add('active');
+
+                // Обновление индикатора навигации
+                moveNavIndicator(index);
+
+                // Сохранение активной вкладки в localStorage
+                localStorage.setItem('activeTab', tabId);
+
+                // Обновить activeTabId
+                activeTabId = tabId;
+            });
+        });
+
+        // Функция для перемещения индикатора навигации
+        function moveNavIndicator(index) {
+            const indicator = document.querySelector('.nav-indicator');
+            indicator.style.transform = `translateX(${index * 100}%)`;
+        }
+
+        // Инициализация положения активной вкладки при загрузке страницы
+        window.onload = function() {
+            // Проверка, есть ли активная вкладка в localStorage или по умолчанию
+            activeTabId = localStorage.getItem('activeTab') || activeTabId;
+
+            // Определение индекса активной вкладки
+            let activeIndex = 0;
+            navButtons.forEach((btn, index) => {
+                if (btn.getAttribute('data-tab') === activeTabId) {
+                    btn.classList.add('active');
+
+                    navButtonContainers[activeTabId].classList.add('active');
+                    activeIndex = index;
+                } else {
+                    btn.classList.remove('active');
+                    navButtonContainers[btn.getAttribute('data-tab')].classList.remove('active');
+                }
+            });
+
+            // Установить активную вкладку
+            tabContents.forEach(tab => {
+                if (tab.id === activeTabId) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+
+            // Переместить индикатор навигации
+            moveNavIndicator(activeIndex);
+
+            // Обновление задач
+            for (let taskId in tasksStatus) {
+                if (tasksStatus[taskId].completed) {
+                    const taskButton = document.querySelector(`#task-${taskId} .task-button`);
+                    const checkButton = document.getElementById(`check-${taskId}`);
+                    taskButton.innerText = 'Completed';
+                    taskButton.disabled = true;
+                    checkButton.disabled = true;
+                } else if (tasksStatus[taskId].checked) {
+                    const checkButton = document.getElementById(`check-${taskId}`);
+                    checkButton.disabled = false;
+                }
+            }
+
+            // Фокус на Telegram Web App (если доступен)
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.ready();
+            }
+        }
+
+        // Function to toggle additional tasks
+        function toggleAdditionalTasks() {
+            const additionalTasks = document.getElementById('additional-tasks');
+            const showMoreBtn = document.getElementById('show-more-btn');
+
+            if (additionalTasks.style.display === 'none') {
+                additionalTasks.style.display = 'block';
+                showMoreBtn.innerText = 'Show less tasks -';
+            } else {
+                additionalTasks.style.display = 'none';
+                showMoreBtn.innerText = 'Show more tasks +';
+            }
+        }
+
+        // Function to open task links
+        function openTask(taskId) {
+            const taskButton = document.querySelector(`#task-${taskId} .task-button`);
+            const checkButton = document.getElementById(`check-${taskId}`);
+
+            // Check if the task is already completed
+            if (tasksStatus[taskId] && tasksStatus[taskId].completed) return;
+
+            // Open the corresponding link
+            let link;
+            switch(taskId) {
+                case 1:
+                    link = "https://t.me/ducksproject";
+                    break;
+                case 2:
+                    link = "https://t.me/durov";
+                    break;
+                case 3:
+                    link = "https://t.me/notcoin";
+                    break;
+                case 4:
+                    navigateToGetHots();
+                    return;
+                case 5:
+                    link = "https://t.me/hotonnear";
+                    break;
+                default:
+                    link = "#";
+            }
+
+            if (link !== "#") {
+                // Проверяем, запущено ли приложение внутри Telegram Web App
+                if (window.Telegram && window.Telegram.WebApp) {
+                    Telegram.WebApp.openLink(link, { hide_web_app_bar: false });
+                } else {
+                    window.open(link, '_blank');
+                }
+            }
+
+            // Disable the Open button until check
+            taskButton.disabled = true;
+
+            // Set a timer to enable the Check button after 10 секунд
+            setTimeout(() => {
+                checkButton.disabled = false;
+                tasksStatus[taskId] = { checked: false, completed: false };
+                updateLocalStorage();
+            }, 10000);
+        }
+
+        // Function to check task completion
+        function checkTask(taskId) {
+const checkButton = document.getElementById(`check-${taskId}`);
+
+            // Verify if Open was clicked and 10 seconds have passed
+            if (tasksStatus[taskId] && !tasksStatus[taskId].checked && !tasksStatus[taskId].completed) {
+                // Assign rewards
+                let ducksReward = 0;
+                let hotReward = 0;
+
+                switch(taskId) {
+                    case 1:
+                        ducksReward = 400;
+                        hotReward = 3;
+                        break;
+                    case 2:
+                        ducksReward = 600;
+                        hotReward = 2;
+                        break;
+                    case 3:
+                        ducksReward = 600;
+                        hotReward = 2;
+                        break;
+                    case 4:
+                        ducksReward = 1500;
+                        hotReward = 6;
+                        break;
+                    case 5:
+                        ducksReward = 600;
+                        hotReward = 2;
+                        break;
+                }
+
+                DUCKS += ducksReward;
+                HOT += hotReward;
+                document.getElementById('ducks-value').innerText = DUCKS;
+                document.getElementById('hots-available').innerText = HOT;
+
+                // Update task status
+                tasksStatus[taskId].completed = true;
+                updateLocalStorage();
+
+                // Disable buttons
+                checkButton.disabled = true;
+                const taskButton = document.querySelector(`#task-${taskId} .task-button`);
+                taskButton.innerText = 'Completed';
+                taskButton.disabled = true;
+            }
+
+            updateLocalStorage();
+        }
+
+        // Function to navigate to Get HOT's tab
+        function navigateToGetHots() {
+            const tabId = 'get-hots-tab';
+            const button = document.querySelector(`[data-tab="${tabId}"]`);
+
+            // Trigger click event on Get HOT's button
+            button.click();
+        }
+
+        // Function to invite friends
+        function inviteFriends() {
+            invitedFriends += 1;
+            document.getElementById('invite-count').innerText = invitedFriends;
+            const inviteLink = `https://t.me/yourcustominvite/${invitedFriends}`;
+            alert(`Your invite link: ${inviteLink}`);
+            updateLocalStorage();
+        }
+
+        // Function to toggle FAQ answers
+        function toggleFAQ(element) {
+            const answer = element.nextElementSibling;
+            const arrow = element.querySelector('.faq-arrow');
+            answer.classList.toggle('visible');
+            arrow.classList.toggle('rotated');
+            // Update arrow symbol
+            if (arrow.classList.contains('rotated')) {
+                arrow.innerText = '-';
+            } else {
+                arrow.innerText = '+';
+            }
+        }
+    </script>
+</body>
+</html>

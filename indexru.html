@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$DUCKS Project</title>
+    <!-- Подключение шрифта Ruda -->
+    <link href="https://fonts.googleapis.com/css2?family=Ruda:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Общие стили */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Ruda', sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .container {
+            position: relative;
+            height: 100%;
+            width: 100%;
+        }
+
+        /* Контейнеры вкладок */
+        .tab {
+            position: absolute;
+            top: 0;
+            left: 100%;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: left 0.5s ease-in-out;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .tab.active {
+            left: 0;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Логотип */
+        .tab img.logo {
+            width: 50%;
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        /* Заголовки и тексты */
+        .tab h1 {
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .tab p {
+            font-size: 16px;
+            text-align: center;
+            max-width: 300px;
+            line-height: 1.5;
+        }
+
+        /* Изображения во вкладках */
+        .tab img.content-image {
+            width: 80%;
+            max-width: 300px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        /* Кнопка "Start farming" */
+        .start-farming-button {
+            padding: 15px 30px;
+            font-size: 18px;
+            color: #FFFFFF;
+            background-color: #000000;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            margin-top: 20px;
+        }
+
+        .start-farming-button:hover {
+            background-color: #333333;
+            transform: scale(1.05);
+        }
+
+        /* Индикаторы вкладок */
+        .tab-indicators {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            background-color: #CCCCCC;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+
+        .dot.active {
+            background-color: #000000;
+        }
+
+        /* Стрелки навигации */
+        .nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 30px;
+            color: #000000;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: color 0.3s;
+            padding: 10px;
+        }
+
+        .nav-arrow:hover {
+            color: #555555;
+
+        }
+
+        .nav-arrow.left {
+            left: 10px;
+            content: "";
+            display: block;
+            width: 20px;
+            height: 20px;
+            border-right: 2px solid black;
+            border-bottom: 2px solid black;
+            transform: rotate(-225deg);
+        }
+
+        .nav-arrow.right {
+            right: 10px;
+            content: "";
+            display: block;
+            width: 20px;
+            height: 20px;
+            border-right: 2px solid black;
+            border-bottom: 2px solid black;
+            transform: rotate(-45deg);
+        }
+
+        /* Плавный переход для стрелок */
+        .fade-in {
+
+            animation: fadeIn 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Адаптивность */
+        @media (max-width: 600px) {
+            .tab h1 {
+                font-size: 20px;
+            }
+
+            .tab p {
+                font-size: 14px;
+                max-width: 250px;
+            }
+
+            .start-farming-button {
+                font-size: 16px;
+                padding: 12px 25px;
+            }
+
+            .nav-arrow {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Вкладка 1 -->
+        <div class="tab active" id="tab1">
+            <img src="icons/duck-logo.png" alt="Logo" class="logo">
+            <h1>Добро пожаловать в $DUCKS</h1>
+        </div>
+
+        <!-- Вкладка 2 -->
+        <div class="tab" id="tab2">
+            <img src="icons/app.png" alt="App" class="content-image">
+            <h1>Выполняйте простые задания и получайте $DUCKS</h1>
+            <p>Листинг состоится очень скоро, получайте $DUCKS за выполнение заданий, приглашайте друзей и участвуйте в коллаборациях, чтобы получить больше токенов</p>
+        </div>
+
+        <!-- Вкладка 3 -->
+        <div class="tab" id="tab3">
+            <img src="icons/collab.png" alt="Collaboration" class="content-image">
+            <h1>Коллаборация с <span style="color: rgba(255, 188, 1, 1);">HOT</span> Wallet</h1>
+            <p>Участвуйте в нашем новом сотрудничестве с <span style="color: rgba(255, 188, 1, 1);">HOT</span> Wallet и получайте токены HOT в свой кошелек, как только выполните задания</p>
+            <button class="start-farming-button" onclick="window.location.href = 'start_ru.html';">Начать</button>
+        </div>
+
+        <!-- Стрелки навигации -->
+        <button class="nav-arrow left" id="backArrow"></button>
+        <button class="nav-arrow right" id="nextArrow"></button>
+
+        <!-- Индикаторы вкладок -->
+        <div class="tab-indicators">
+            <span class="dot active" data-tab="1"></span>
+            <span class="dot" data-tab="2"></span>
+            <span class="dot" data-tab="3"></span>
+        </div>
+    </div>
+
+    <script>
+        // Получение элементов
+        const tabs = document.querySelectorAll('.tab');
+        const dots = document.querySelectorAll('.dot');
+        const backArrow = document.getElementById('backArrow');
+        const nextArrow = document.getElementById('nextArrow');
+
+        let currentTab = 1;
+
+        // Функция обновления вкладок
+        function updateTabs() {
+            tabs.forEach((tab, index) => {
+                if (index + 1 === currentTab) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+
+            // Обновление индикаторов
+            dots.forEach((dot, index) => {
+                if (index + 1 === currentTab) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+
+            // Управление видимостью стрелок
+            if (currentTab === 1) {
+                backArrow.style.display = 'none';
+            } else {
+                backArrow.style.display = 'block';
+            }
+
+            if (currentTab === tabs.length) {
+                nextArrow.style.display = 'none';
+            } else {
+                nextArrow.style.display = 'block';
+            }
+        }
+
+        // Обработчик нажатия на стрелку вперед
+        nextArrow.addEventListener('click', () => {
+            if (currentTab < tabs.length) {
+                currentTab++;
+                updateTabs();
+            }
+        });
+
+        // Обработчик нажатия на стрелку назад
+        backArrow.addEventListener('click', () => {
+            if (currentTab > 1) {
+                currentTab--;
+                updateTabs();
+            }
+        });
+
+        // Обработчики нажатия на точки
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+
+                const selectedTab = parseInt(dot.getAttribute('data-tab'));
+                if (selectedTab !== currentTab) {
+                    currentTab = selectedTab;
+                    updateTabs();
+                }
+            });
+        });
+
+        // Инициализация
+        updateTabs();
+    </script>
+</body>
+</html>
